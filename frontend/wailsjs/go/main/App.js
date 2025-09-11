@@ -10,6 +10,10 @@ export function DeleteTask(arg1) {
   return window['go']['main']['App']['DeleteTask'](arg1);
 }
 
+export function GetFilteredTasks(arg1, arg2, arg3) {
+  return window['go']['main']['App']['GetFilteredTasks'](arg1, arg2, arg3);
+}
+
 export function GetTasks() {
   return window['go']['main']['App']['GetTasks']();
 }

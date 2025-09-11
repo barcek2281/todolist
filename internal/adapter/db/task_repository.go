@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"log/slog"
+	"time"
 	"wailstest/internal/model"
 
 	"github.com/google/uuid"
@@ -62,4 +63,12 @@ func (tr *TaskRepository) Delete(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 	return nil
+}
+
+func (tr *TaskRepository) Filter(
+	ctx context.Context, start, end time.Time, status string,
+) ([]model.Task, error) {
+	// q := `SELECT id, title, body, done, status, created_at FROM tasks FROM `
+
+	return []model.Task{}, nil
 }

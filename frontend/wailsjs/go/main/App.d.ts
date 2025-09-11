@@ -6,6 +6,8 @@ export function CreateTask(arg1:model.Task):Promise<void>;
 
 export function DeleteTask(arg1:string):Promise<void>;
 
+export function GetFilteredTasks(arg1:string,arg2:string,arg3:string):Promise<Array<model.Task>>;
+
 export function GetTasks():Promise<Array<model.Task>>;
 
 export function Greet(arg1:model.Task):Promise<string>;
