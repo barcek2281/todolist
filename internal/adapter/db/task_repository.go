@@ -68,7 +68,25 @@ func (tr *TaskRepository) Delete(ctx context.Context, id uuid.UUID) error {
 func (tr *TaskRepository) Filter(
 	ctx context.Context, start, end time.Time, status string,
 ) ([]model.Task, error) {
-	// q := `SELECT id, title, body, done, status, created_at FROM tasks FROM `
-
-	return []model.Task{}, nil
+	q := `SELECT id, title, body, done, status, created_at FROM tasks WHERE created_at BETWEEN $1 AND $2`
+	args := []interface{}{start, end}
+	if status != "" {
+		args = append(args, status)
+		q += ` AND status = $3`
+	}
+	rows, err := tr.conn.Query(ctx, q, args...)
+	if err != nil {
+		return []model.Task{}, err
+	}
+	tasks := make([]model.Task, 0)
+	for rows.Next() {
+		task := model.Task{}
+		err = rows.Scan(&task.ID, &task.Title, &task.Body, &task.Done, &task.Status, &task.CreatedAt)
+		if err != nil {
+			slog.Error("cannot scan", "error", err)
+			continue
+		}
+		tasks = append(tasks, task)
+	}
+	return tasks, nil
 }

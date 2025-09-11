@@ -46,7 +46,9 @@ let taskTitle = document.getElementById("taskTitle");
 let taskBody = document.getElementById("taskBody");
 let taskList = document.getElementById("taskList");
 
-let filterFrom = document.getElementById("filterFrom");
+let 
+
+filterFrom = document.getElementById("filterFrom");
 let filterTo = document.getElementById("filterTo");
 let filterStatus = document.getElementById("filterStatus");
 

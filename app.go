@@ -108,7 +108,6 @@ func (a *App) DeleteTask(id string) error {
 }
 
 func (a *App) GetFilteredTasks(from, to string, status string) ([]model.Task, error) {
-	slog.Info("sex", "from", from, "to", to, "status", status)
 	start, end := time.Unix(0, 0).UTC(), time.Now()
 	if from != "" {
 		start1, err := time.Parse("2006-01-02", from)
@@ -125,7 +124,15 @@ func (a *App) GetFilteredTasks(from, to string, status string) ([]model.Task, er
 		}
 		end = end2
 	}
-	slog.Info("sex", "start", start, "end", end, "status", status)
 
-	return make([]model.Task, 0), nil
+	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
+	defer cancel()
+
+	slog.Info("sex", "start", start, "end", end, "status", status)
+	tasks, err := a.taskRepo.Filter(ctx, start, end, status)
+	if err != nil {
+		slog.Error("cannot get filter", "error", err)
+		return make([]model.Task, 0), nil
+	}
+	return tasks, nil
 }
