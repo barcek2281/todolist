@@ -1,10 +1,11 @@
 export namespace model {
 	
 	export class Task {
-	    id: number;
+	    id: number[];
 	    title: string;
 	    body: string;
 	    done: boolean;
+	    status: string;
 	    // Go type: time
 	    created_at: any;
 	
@@ -18,6 +19,7 @@ export namespace model {
 	        this.title = source["title"];
 	        this.body = source["body"];
 	        this.done = source["done"];
+	        this.status = source["status"];
 	        this.created_at = this.convertValues(source["created_at"], null);
 	    }
 	

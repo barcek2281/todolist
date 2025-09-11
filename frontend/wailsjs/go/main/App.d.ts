@@ -4,4 +4,10 @@ import {model} from '../models';
 
 export function CreateTask(arg1:model.Task):Promise<void>;
 
+export function DeleteTask(arg1:string):Promise<void>;
+
+export function GetTasks():Promise<Array<model.Task>>;
+
 export function Greet(arg1:model.Task):Promise<string>;
+
+export function UpdateTaskStatus(arg1:string,arg2:string):Promise<void>;

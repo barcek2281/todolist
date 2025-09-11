@@ -1,18 +1,17 @@
 .app-container {
-  max-width: 400px;
+  max-width: 1000px;
   margin: 0 auto;
-  text-align: center;
   font-family: sans-serif;
 }
 
 .input-box {
   display: flex;
+  flex-direction: column;
   gap: 8px;
   margin: 16px 0;
 }
 
 .input {
-  flex: 1;
   padding: 8px;
   border-radius: 6px;
   border: 1px solid #ccc;
@@ -27,6 +26,19 @@
   cursor: pointer;
 }
 
+.columns {
+  display: flex;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.column {
+  flex: 1;
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 10px;
+}
+
 .task-list {
   list-style: none;
   padding: 0;
@@ -35,13 +47,32 @@
 
 .task-item {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 8px;
-  padding: 6px 0;
-  border-bottom: 1px solid #eee;
+  padding: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  color: black;
 }
 
-.task-item span.done {
-  text-decoration: line-through;
-  color: gray;
+.task-item p {
+  margin: 4px 0 0 0;
+  font-size: 0.9em;
+  color: #555;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.delete-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
 }

@@ -3,10 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 	"wailstest/internal/adapter/db"
 	"wailstest/internal/config"
 	"wailstest/internal/model"
+
+	"github.com/google/uuid"
 )
 
 // App struct
@@ -46,5 +49,60 @@ func (a *App) Greet(t model.Task) string {
 func (a *App) CreateTask(task model.Task) error {
 	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
 	defer cancel()
-	return a.taskRepo.Create(ctx, task)
+	err := a.taskRepo.Create(ctx, task)
+	if err != nil {
+		slog.Error("cannot create task", "error", err)
+		return err
+	}
+	slog.Info("task succesfull created")
+	return err
+}
+
+func (a *App) GetTasks() ([]model.Task, error) {
+	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
+	defer cancel()
+
+	tasks, err := a.taskRepo.GetAll(ctx)
+	if err != nil {
+		slog.Error("cannot create task", "error", err)
+		return []model.Task{}, err
+	}
+
+	return tasks, nil
+}
+
+func (a *App) UpdateTaskStatus(id string, status string) error {
+	iid, err := uuid.Parse(id)
+	if err != nil {
+		slog.Info("uuid", "error", err, "id", id)
+		return err
+	}
+	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
+	defer cancel()
+
+	err = a.taskRepo.UpdateStatus(ctx, iid, status)
+	if err != nil {
+		slog.Error("cannot update task", "error", err)
+		return err
+	}
+	slog.Info("updated task", "id", id)
+	return nil
+}
+
+func (a *App) DeleteTask(id string) error {
+	iid, err := uuid.Parse(id)
+	if err != nil {
+		slog.Info("uuid", "error", err, "id", id)
+		return err
+	}
+	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
+	defer cancel()
+
+	err = a.taskRepo.Delete(ctx, iid)
+	if err != nil {
+		slog.Error("cannot delete task", "error", err)
+		return err
+	}
+	slog.Info("deleted task", "id", id)
+	return nil
 }

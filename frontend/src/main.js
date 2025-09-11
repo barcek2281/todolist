@@ -1,63 +1,102 @@
 import './style.css';
 import './app.css';
 
-import logo from './assets/images/logo-universal.png';
-import { CreateTask } from '../wailsjs/go/main/App';
+import { CreateTask, GetTasks, UpdateTaskStatus, DeleteTask } from '../wailsjs/go/main/App';
 
 document.querySelector('#app').innerHTML = `
   <div class="app-container">
     <h1>My Todo List ✅</h1>
     
     <div class="input-box">
-      <input class="input" id="taskInput" type="text" placeholder="Enter a task..." autocomplete="off"/>
-      <button class="btn" id="addTaskBtn">Add</button>
+      <input class="input" id="taskTitle" type="text" placeholder="Task title..." autocomplete="off"/>
+      <textarea class="input" id="taskBody" placeholder="Task description..."></textarea>
+      <button class="btn" id="addTaskBtn">Add Task</button>
     </div>
-    
-    <ul id="taskList" class="task-list"></ul>
+
+    <div class="columns">
+      <div class="column">
+        <h2 style="color: black;">Not Started</h2>
+        <ul id="notStartedList" class="task-list"></ul>
+      </div>
+      <div class="column">
+        <h2 style="color: black;">In Progress</h2>
+        <ul id="inProgressList" class="task-list"></ul>
+      </div>
+      <div class="column">
+        <h2 style="color: black;">Done</h2>
+        <ul id="doneList" class="task-list"></ul>
+      </div>
+    </div>
   </div>
 `;
 
+let taskTitle = document.getElementById("taskTitle");
+let taskBody = document.getElementById("taskBody");
 
-let taskInput = document.getElementById("taskInput");
-let taskList = document.getElementById("taskList");
-
-// Load tasks when app starts
-// loadTasks();
-
-// Add task
 document.getElementById("addTaskBtn").addEventListener("click", () => {
-    let title = taskInput.value.trim();
+    let title = taskTitle.value.trim();
+    let body = taskBody.value.trim();
     if (title === "") return;
 
-    CreateTask({title})
+    CreateTask({title, body})
         .then(() => {
-            taskInput.value = "";
+            taskTitle.value = "";
+            taskBody.value = "";
             loadTasks();
         })
         .catch(err => console.error(err));
 });
 
-// Load tasks from backend
 function loadTasks() {
     GetTasks()
         .then(tasks => {
-            taskList.innerHTML = "";
+            document.getElementById("notStartedList").innerHTML = "";
+            document.getElementById("inProgressList").innerHTML = "";
+            document.getElementById("doneList").innerHTML = "";
+
             tasks.forEach(task => {
                 let li = document.createElement("li");
                 li.className = "task-item";
                 li.innerHTML = `
-                  <input type="checkbox" ${task.done ? "checked" : ""} data-id="${task.id}">
-                  <span class="${task.done ? "done" : ""}">${task.title}</span>
+                  <div>
+                    <strong>${task.title}</strong>
+                    <p>${task.body || ""}</p>
+                  </div>
+                  <div class="actions">
+                    <select data-id="${task.id}">
+                      <option value="not_started" ${task.status === "not_started" ? "selected" : ""}>Not Started</option>
+                      <option value="in_progress" ${task.status === "in_progress" ? "selected" : ""}>In Progress</option>
+                      <option value="done" ${task.status === "done" ? "selected" : ""}>Done</option>
+                    </select>
+                    <button class="delete-btn" data-id="${task.id}">❌</button>
+                  </div>
                 `;
-                
-                li.querySelector("input").addEventListener("change", (e) => {
-                    ToggleTask(task.id)
-                        .then(() => loadTasks())
+
+                // Change status
+                li.querySelector("select").addEventListener("change", (e) => {
+                    UpdateTaskStatus(task.id, e.target.value)
+                        .then(loadTasks)
                         .catch(err => console.error(err));
                 });
 
-                taskList.appendChild(li);
+                // Delete
+                li.querySelector(".delete-btn").addEventListener("click", () => {
+                    DeleteTask(task.id)
+                        .then(loadTasks)
+                        .catch(err => console.error(err));
+                });
+
+                if (task.status === "not_started") {
+                    document.getElementById("notStartedList").appendChild(li);
+                } else if (task.status === "in_progress") {
+                    document.getElementById("inProgressList").appendChild(li);
+                } else {
+                    document.getElementById("doneList").appendChild(li);
+                }
             });
         })
         .catch(err => console.error(err));
 }
+
+// Load on startup
+loadTasks();

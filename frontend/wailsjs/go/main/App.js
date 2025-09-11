@@ -6,6 +6,18 @@ export function CreateTask(arg1) {
   return window['go']['main']['App']['CreateTask'](arg1);
 }
 
+export function DeleteTask(arg1) {
+  return window['go']['main']['App']['DeleteTask'](arg1);
+}
+
+export function GetTasks() {
+  return window['go']['main']['App']['GetTasks']();
+}
+
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
+}
+
+export function UpdateTaskStatus(arg1, arg2) {
+  return window['go']['main']['App']['UpdateTaskStatus'](arg1, arg2);
 }
