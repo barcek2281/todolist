@@ -8,30 +8,29 @@ import (
 	"wailstest/internal/adapter/db"
 	"wailstest/internal/config"
 	"wailstest/internal/model"
-
-	"github.com/google/uuid"
+	"wailstest/internal/service"
 )
 
 // App struct
 type App struct {
-	ctx      context.Context
-	cnf      *config.Config
-	db       *db.DB
-	taskRepo *db.TaskRepository
+	ctx         context.Context
+	cnf         *config.Config
+	taskService *service.TaskService
+	log         *slog.Logger
 }
 
 // NewApp creates a new App application struct
-func NewApp(cnf *config.Config) (*App, error) {
+func NewApp(cnf *config.Config, log *slog.Logger) (*App, error) {
 	database, err := db.New(context.Background(), cnf.DB)
 	if err != nil {
 		return nil, err
 	}
 	tr := db.NewTaskRepository(database.Conn)
-
+	ts := service.NewTaskService(log, tr)
 	return &App{
-		cnf:      cnf,
-		db:       database,
-		taskRepo: tr,
+		cnf:         cnf,
+		log:         log.With("app", "App"),
+		taskService: ts,
 	}, nil
 }
 
@@ -47,24 +46,24 @@ func (a *App) Greet(t model.Task) string {
 }
 
 func (a *App) CreateTask(task model.Task) error {
+	log := a.log.With("method", "CreateTask")
 	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
 	defer cancel()
-	err := a.taskRepo.Create(ctx, task)
+	err := a.taskService.Create(ctx, task)
 	if err != nil {
-		slog.Error("cannot create task", "error", err)
+		log.Error("cannot create task", "error", err)
 		return err
 	}
-	slog.Info("task succesfull created")
+	log.Info("task succesfull created")
 	return err
 }
 
 func (a *App) GetTasks() ([]model.Task, error) {
-	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
-	defer cancel()
+	log := a.log.With("method", "GetTasks")
 
-	tasks, err := a.taskRepo.GetAll(ctx)
+	tasks, err := a.taskService.GetTasks(a.ctx)
 	if err != nil {
-		slog.Error("cannot create task", "error", err)
+		log.Error("cannot create task", "error", err)
 		return []model.Task{}, err
 	}
 
@@ -72,87 +71,48 @@ func (a *App) GetTasks() ([]model.Task, error) {
 }
 
 func (a *App) UpdateTaskStatus(id string, status string) error {
-	iid, err := uuid.Parse(id)
-	if err != nil {
-		slog.Info("uuid", "error", err, "id", id)
-		return err
-	}
-	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
-	defer cancel()
+	log := a.log.With("method", "UpdateTaskStatus")
 
-	err = a.taskRepo.UpdateStatus(ctx, iid, status)
+	err := a.taskService.UpdateTaskStatus(a.ctx, id, status)
 	if err != nil {
-		slog.Error("cannot update task", "error", err)
+		log.Error("cannot update task", "error", err)
 		return err
 	}
-	slog.Info("updated task", "id", id)
+	log.Info("updated task", "id", id, "status", status)
 	return nil
 }
 
 func (a *App) DeleteTask(id string) error {
-	iid, err := uuid.Parse(id)
-	if err != nil {
-		slog.Info("uuid", "error", err, "id", id)
-		return err
-	}
-	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
-	defer cancel()
+	log := a.log.With("method", "UpdateTaskStatus")
 
-	err = a.taskRepo.Delete(ctx, iid)
+	err := a.taskService.DeleteTask(a.ctx, id)
 	if err != nil {
-		slog.Error("cannot delete task", "error", err)
+		log.Error("cannot delete task", "error", err)
 		return err
 	}
-	slog.Info("deleted task", "id", id)
+	log.Info("deleted task", "id", id)
 	return nil
 }
 
 func (a *App) GetFilteredAndSortedTasks(from, to string, status string, orderBy string, asc bool) ([]model.Task, error) {
-	start, end := time.Unix(0, 0).UTC(), time.Now()
-	if from != "" {
-		start1, err := time.Parse("2006-01-02", from)
-		if err != nil {
-			slog.Error("cannot parse date", "error", err)
-			return make([]model.Task, 0), err
-		}
-		start = start1
-	}
+	log := a.log.With("method", "GetFilteredAndSortedTasks")
 
-	if to != "" {
-		end2, err := time.Parse("2006-01-02", to)
-		if err != nil {
-			slog.Error("cannot parse date", "error", err)
-			return make([]model.Task, 0), err
-		}
-		end = end2
-	}
-
-	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
-	defer cancel()
-
-	slog.Info("sex", "start", start, "end", end, "status", status, "orderby", orderBy, "asc", asc)
-	tasks, err := a.taskRepo.FilterAndSort(ctx, start, end, status, orderBy, asc)
+	tasks, err := a.taskService.GetFilteredAndSortedTasks(a.ctx, from, to, status, orderBy, asc)
 	if err != nil {
 		slog.Error("cannot get filter", "error", err)
 		return make([]model.Task, 0), nil
 	}
 
-	slog.Info("sexx")
+	log.Debug("get filtered and sorted data")
 	return tasks, nil
 }
 
 func (a *App) UpdateTaskPriority(id string, priority int) error {
-	iid, err := uuid.Parse(id)
+	log := a.log.With("method", "UpdateTaskPriority")
+
+	err := a.taskService.UpdateTaskPriority(a.ctx, id, priority)
 	if err != nil {
-		slog.Info("uuid", "error", err, "id", id)
-		return err
-	}
-	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
-	defer cancel()
-	slog.Info("dfaea", "id" , id)
-	err = a.taskRepo.UpdatePriority(ctx, iid, priority)
-	if err != nil {
-		slog.Error("cannot update", "error", err)
+		log.Error("cannot update", "error", err)
 		return err
 	}
 	return nil

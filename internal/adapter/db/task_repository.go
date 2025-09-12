@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"time"
 	"wailstest/internal/model"
 
@@ -39,7 +38,6 @@ func (tr *TaskRepository) GetAll(ctx context.Context) ([]model.Task, error) {
 		task := model.Task{}
 		err = rows.Scan(&task.ID, &task.Title, &task.Body, &task.Done, &task.Status, &task.CreatedAt, &task.Priority)
 		if err != nil {
-			slog.Error("cannot scan", "error", err)
 			continue
 		}
 		tasks = append(tasks, task)
@@ -105,7 +103,6 @@ func (tr *TaskRepository) FilterAndSort(
 		q += ` DESC;`
 	}
 
-	slog.Info("lox", "adwa", q)
 	rows, err := tr.conn.Query(ctx, q, args...)
 	if err != nil {
 		return []model.Task{}, err
@@ -115,7 +112,6 @@ func (tr *TaskRepository) FilterAndSort(
 		task := model.Task{}
 		err = rows.Scan(&task.ID, &task.Title, &task.Body, &task.Done, &task.Status, &task.CreatedAt, &task.Priority)
 		if err != nil {
-			slog.Error("cannot scan", "error", err)
 			continue
 		}
 		tasks = append(tasks, task)
