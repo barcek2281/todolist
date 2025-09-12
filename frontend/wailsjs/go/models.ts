@@ -6,6 +6,7 @@ export namespace model {
 	    body: string;
 	    done: boolean;
 	    status: string;
+	    priority: number;
 	    // Go type: time
 	    created_at: any;
 	
@@ -20,6 +21,7 @@ export namespace model {
 	        this.body = source["body"];
 	        this.done = source["done"];
 	        this.status = source["status"];
+	        this.priority = source["priority"];
 	        this.created_at = this.convertValues(source["created_at"], null);
 	    }
 	

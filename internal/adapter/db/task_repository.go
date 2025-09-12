@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"time"
 	"wailstest/internal/model"
@@ -22,13 +23,13 @@ func NewTaskRepository(conn *pgx.Conn) *TaskRepository {
 
 // implement me
 func (tr *TaskRepository) Create(ctx context.Context, task model.Task) error {
-	q := `INSERT INTO tasks (title, body) VALUES ($1, $2)`
-	_, err := tr.conn.Exec(ctx, q, task.Title, task.Body)
+	q := `INSERT INTO tasks (title, body, priority) VALUES ($1, $2, $3)`
+	_, err := tr.conn.Exec(ctx, q, task.Title, task.Body, task.Priority)
 	return err
 }
 
 func (tr *TaskRepository) GetAll(ctx context.Context) ([]model.Task, error) {
-	q := `SELECT id, title, body, done, status, created_at FROM tasks ORDER BY created_at`
+	q := `SELECT id, title, body, done, status, created_at, priority FROM tasks ORDER BY created_at`
 	rows, err := tr.conn.Query(ctx, q)
 	if err != nil {
 		return []model.Task{}, err
@@ -36,7 +37,7 @@ func (tr *TaskRepository) GetAll(ctx context.Context) ([]model.Task, error) {
 	tasks := make([]model.Task, 0)
 	for rows.Next() {
 		task := model.Task{}
-		err = rows.Scan(&task.ID, &task.Title, &task.Body, &task.Done, &task.Status, &task.CreatedAt)
+		err = rows.Scan(&task.ID, &task.Title, &task.Body, &task.Done, &task.Status, &task.CreatedAt, &task.Priority)
 		if err != nil {
 			slog.Error("cannot scan", "error", err)
 			continue
@@ -65,15 +66,46 @@ func (tr *TaskRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (tr *TaskRepository) Filter(
-	ctx context.Context, start, end time.Time, status string,
+func (tr *TaskRepository) FilterAndSort(
+	ctx context.Context,
+	start, end time.Time,
+	status string,
+	orderBy string,
+	asc bool,
 ) ([]model.Task, error) {
-	q := `SELECT id, title, body, done, status, created_at FROM tasks WHERE created_at BETWEEN $1 AND $2`
+	q := `SELECT id,
+		title, 
+		body,
+		done,
+		status,
+		created_at,
+		priority
+	FROM 
+		tasks
+	WHERE created_at::date >= $1 AND created_at::date <= $2`
 	args := []interface{}{start, end}
 	if status != "" {
 		args = append(args, status)
 		q += ` AND status = $3`
 	}
+
+	switch orderBy {
+	case "created_at":
+		q += ` ORDER BY created_at `
+	case "priority":
+		q += ` ORDER BY priority `
+	default:
+		q += fmt.Sprintf(` ORDER BY $%d `, len(args)+1)
+		args = append(args, "created_at")
+	}
+
+	if orderBy != "" && asc {
+		q += ` ASC;`
+	} else if orderBy != "" && !asc {
+		q += ` DESC;`
+	}
+
+	slog.Info("lox", "adwa", q)
 	rows, err := tr.conn.Query(ctx, q, args...)
 	if err != nil {
 		return []model.Task{}, err
@@ -81,7 +113,7 @@ func (tr *TaskRepository) Filter(
 	tasks := make([]model.Task, 0)
 	for rows.Next() {
 		task := model.Task{}
-		err = rows.Scan(&task.ID, &task.Title, &task.Body, &task.Done, &task.Status, &task.CreatedAt)
+		err = rows.Scan(&task.ID, &task.Title, &task.Body, &task.Done, &task.Status, &task.CreatedAt, &task.Priority)
 		if err != nil {
 			slog.Error("cannot scan", "error", err)
 			continue
@@ -89,4 +121,14 @@ func (tr *TaskRepository) Filter(
 		tasks = append(tasks, task)
 	}
 	return tasks, nil
+}
+
+func (tr *TaskRepository) UpdatePriority(ctx context.Context, id uuid.UUID, priority int) error {
+	q := `UPDATE tasks SET priority = $1 WHERE id = $2`
+	cmd, err := tr.conn.Exec(ctx, q, priority, id)
+	if cmd.RowsAffected() == 0 {
+		return fmt.Errorf("no such id: %v", err)
+	}
+
+	return err
 }

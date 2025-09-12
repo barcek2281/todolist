@@ -107,19 +107,21 @@ func (a *App) DeleteTask(id string) error {
 	return nil
 }
 
-func (a *App) GetFilteredTasks(from, to string, status string) ([]model.Task, error) {
+func (a *App) GetFilteredAndSortedTasks(from, to string, status string, orderBy string, asc bool) ([]model.Task, error) {
 	start, end := time.Unix(0, 0).UTC(), time.Now()
 	if from != "" {
 		start1, err := time.Parse("2006-01-02", from)
 		if err != nil {
+			slog.Error("cannot parse date", "error", err)
 			return make([]model.Task, 0), err
 		}
 		start = start1
 	}
 
 	if to != "" {
-		end2, err := time.Parse("2006-01-02", from)
+		end2, err := time.Parse("2006-01-02", to)
 		if err != nil {
+			slog.Error("cannot parse date", "error", err)
 			return make([]model.Task, 0), err
 		}
 		end = end2
@@ -128,11 +130,30 @@ func (a *App) GetFilteredTasks(from, to string, status string) ([]model.Task, er
 	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
 	defer cancel()
 
-	slog.Info("sex", "start", start, "end", end, "status", status)
-	tasks, err := a.taskRepo.Filter(ctx, start, end, status)
+	slog.Info("sex", "start", start, "end", end, "status", status, "orderby", orderBy, "asc", asc)
+	tasks, err := a.taskRepo.FilterAndSort(ctx, start, end, status, orderBy, asc)
 	if err != nil {
 		slog.Error("cannot get filter", "error", err)
 		return make([]model.Task, 0), nil
 	}
+
+	slog.Info("sexx")
 	return tasks, nil
+}
+
+func (a *App) UpdateTaskPriority(id string, priority int) error {
+	iid, err := uuid.Parse(id)
+	if err != nil {
+		slog.Info("uuid", "error", err, "id", id)
+		return err
+	}
+	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
+	defer cancel()
+	slog.Info("dfaea", "id" , id)
+	err = a.taskRepo.UpdatePriority(ctx, iid, priority)
+	if err != nil {
+		slog.Error("cannot update", "error", err)
+		return err
+	}
+	return nil
 }
