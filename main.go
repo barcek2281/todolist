@@ -12,10 +12,13 @@ import (
 
 //go:embed all:frontend/dist
 var assets embed.FS
+//go:embed config.yaml
+var defaultConfig []byte
 
 func main() {
-	// Create an instance of the app structure
-	cnf, err := config.New()
+	cnf, err := config.New(defaultConfig)
+
+
 	if err != nil {
 		log.Fatalf("cannot find config file: %v", err)
 	}
@@ -23,7 +26,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("cannot create app: %v", err)
 	}
-	// Create application with options
+
+	
 	err = wails.Run(&options.App{
 		Title:  "todolist",
 		Width:  1024,
