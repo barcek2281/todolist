@@ -37,6 +37,7 @@ document.querySelector('#app').innerHTML = `
         <select id="sortField">
           <option value="created_at">Date</option>
           <option value="priority">Priority</option>
+          <option value="deadline">Deadline</option>
         </select>
       </label>
       <label>

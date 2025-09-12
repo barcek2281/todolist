@@ -10,7 +10,6 @@ Created by Zhunis Ayanat, Тестовое задания для DMARK
 
 - Backend: Go + Wails
 
-
 - Frontend: Vanilla JS, HTML, CSS
 
 - База данных: PostgreSQL
@@ -47,7 +46,7 @@ Created by Zhunis Ayanat, Тестовое задания для DMARK
         - Выполненные
         - Просроченные (Expired Deadline)
     - Фильтрация по дате создания (From / To).
-    - Сортировка по дате создания или приоритету.
+    - Сортировка по дате создания, приоритету или дедлайну.
     - Выбор порядка: Asc / Desc.
 6. Тема
     - Поддержка светлой и тёмной темы.

@@ -104,6 +104,8 @@ func (tr *TaskRepository) FilterAndSort(
 		q += ` ORDER BY created_at `
 	case "priority":
 		q += ` ORDER BY priority `
+	case "deadline":
+		q += ` AND deadline IS NOT NULL ORDER BY deadline `
 	default:
 		q += fmt.Sprintf(` ORDER BY $%d `, len(args)+1)
 		args = append(args, "created_at")
