@@ -111,6 +111,7 @@ func (ts *TaskService) GetFilteredAndSortedTasks(
 	if err != nil {
 		return make([]model.Task, 0), nil
 	}
+	log.Debug("dea len", "len", len(tasks))
 	return tasks, nil
 }
 

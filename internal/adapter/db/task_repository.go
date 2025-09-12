@@ -2,7 +2,9 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"log/slog"
 	"time"
 	"wailstest/internal/model"
 
@@ -22,13 +24,13 @@ func NewTaskRepository(conn *pgx.Conn) *TaskRepository {
 
 // implement me
 func (tr *TaskRepository) Create(ctx context.Context, task model.Task) error {
-	q := `INSERT INTO tasks (title, body, priority) VALUES ($1, $2, $3)`
-	_, err := tr.conn.Exec(ctx, q, task.Title, task.Body, task.Priority)
+	q := `INSERT INTO tasks (title, body, priority, deadline) VALUES ($1, $2, $3, $4)`
+	_, err := tr.conn.Exec(ctx, q, task.Title, task.Body, task.Priority, task.Deadline)
 	return err
 }
 
 func (tr *TaskRepository) GetAll(ctx context.Context) ([]model.Task, error) {
-	q := `SELECT id, title, body, done, status, created_at, priority FROM tasks ORDER BY created_at`
+	q := `SELECT id, title, body, done, status, created_at, priority, deadline FROM tasks ORDER BY created_at`
 	rows, err := tr.conn.Query(ctx, q)
 	if err != nil {
 		return []model.Task{}, err
@@ -36,9 +38,15 @@ func (tr *TaskRepository) GetAll(ctx context.Context) ([]model.Task, error) {
 	tasks := make([]model.Task, 0)
 	for rows.Next() {
 		task := model.Task{}
-		err = rows.Scan(&task.ID, &task.Title, &task.Body, &task.Done, &task.Status, &task.CreatedAt, &task.Priority)
+		deadline := sql.NullTime{}
+		err = rows.Scan(&task.ID, &task.Title, &task.Body, &task.Done, &task.Status, &task.CreatedAt, &task.Priority, &deadline)
 		if err != nil {
 			continue
+		}
+		if deadline.Valid {
+			task.Deadline = &deadline.Time
+		} else {
+			task.Deadline = nil
 		}
 		tasks = append(tasks, task)
 	}
@@ -77,12 +85,16 @@ func (tr *TaskRepository) FilterAndSort(
 		done,
 		status,
 		created_at,
-		priority
+		priority,
+		deadline
 	FROM 
 		tasks
 	WHERE created_at::date >= $1 AND created_at::date <= $2`
 	args := []interface{}{start, end}
-	if status != "" {
+
+	if status == "expired" {
+		q += ` AND deadline <= CURRENT_TIMESTAMP AND status != 'done'`
+	} else if status != "" {
 		args = append(args, status)
 		q += ` AND status = $3`
 	}
@@ -110,10 +122,18 @@ func (tr *TaskRepository) FilterAndSort(
 	tasks := make([]model.Task, 0)
 	for rows.Next() {
 		task := model.Task{}
-		err = rows.Scan(&task.ID, &task.Title, &task.Body, &task.Done, &task.Status, &task.CreatedAt, &task.Priority)
+		deadline := sql.NullTime{}
+		err = rows.Scan(&task.ID, &task.Title, &task.Body, &task.Done, &task.Status, &task.CreatedAt, &task.Priority, &deadline)
 		if err != nil {
+			slog.Warn("cannot scan data")
 			continue
 		}
+		if deadline.Valid {
+			task.Deadline = &deadline.Time
+		} else {
+			task.Deadline = nil
+		}
+
 		tasks = append(tasks, task)
 	}
 	return tasks, nil

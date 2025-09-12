@@ -9,6 +9,8 @@ export namespace model {
 	    priority: number;
 	    // Go type: time
 	    created_at: any;
+	    // Go type: time
+	    deadline?: any;
 	
 	    static createFrom(source: any = {}) {
 	        return new Task(source);
@@ -23,6 +25,7 @@ export namespace model {
 	        this.status = source["status"];
 	        this.priority = source["priority"];
 	        this.created_at = this.convertValues(source["created_at"], null);
+	        this.deadline = this.convertValues(source["deadline"], null);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

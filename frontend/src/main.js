@@ -23,6 +23,7 @@ document.querySelector('#app').innerHTML = `
           <option value="not_started">Not Started</option>
           <option value="in_progress">In Progress</option>
           <option value="done">Done</option>
+          <option value="expired">Expired Deadline</option>
         </select>
       </label>
       <button class="btn" id="applyFilters">Apply</button>
@@ -61,6 +62,10 @@ document.querySelector('#app').innerHTML = `
           <option value="3">3 (highest)</option>
         </select>
       </label>
+      <label>
+        Deadline:
+        <input type="datetime-local" id="taskDeadline">
+      </label>
       <button class="btn" type="submit">Add Task</button>
     </form>
 
@@ -73,6 +78,7 @@ let taskTitle = document.getElementById("taskTitle");
 let taskBody = document.getElementById("taskBody");
 let taskPriority = document.getElementById("taskPriority");
 let taskList = document.getElementById("taskList");
+let taskDeadline = document.getElementById("taskDeadline");
 
 let filterFrom = document.getElementById("filterFrom");
 let filterTo = document.getElementById("filterTo");
@@ -94,13 +100,16 @@ document.getElementById("taskForm").addEventListener("submit", (e) => {
     let title = taskTitle.value.trim();
     let body = taskBody.value.trim();
     let priority = parseInt(taskPriority.value, 10);
+    let deadline = taskDeadline.value ? new Date(taskDeadline.value).toISOString() : null; // ISO формат
+
     if (!title) return;
 
-    CreateTask({ title, body, priority })
+    CreateTask({ title, body, priority, deadline})
         .then(() => {
             taskTitle.value = "";
             taskBody.value = "";
             taskPriority.value = "0";
+            taskDeadline.value = ""
             loadAllTasks();
         })
         .catch(err => console.error(err));
@@ -120,6 +129,7 @@ function renderTasks(tasks) {
             <strong class="${task.status === "done" ? "done-text" : ""}">${task.title}</strong>
             <p class="${task.status === "done" ? "done-text" : ""}">${task.body || ""}</p>
             <small>Created: ${new Date(task.created_at).toLocaleDateString()}</small>
+            ${task.deadline ? `<small>Deadline: ${new Date(task.deadline).toLocaleString()}</small>` : ""}
           </div>
           <div class="actions">
             <label>
