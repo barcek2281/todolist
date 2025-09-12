@@ -1,12 +1,36 @@
+:root {
+  --bg-color: #1e2a38;
+  --text-color: #fff;
+  --card-bg: #2a374b;
+  --btn-bg: linear-gradient(135deg, #ff7e5f, #feb47b);
+  --btn-cancel-bg: linear-gradient(135deg, #6a11cb, #2575fc);
+}
+
+body.light {
+  --bg-color: #f5f5f5;
+  --text-color: #222;
+  --card-bg: #fff;
+  --btn-bg: linear-gradient(135deg, #4facfe, #00f2fe);
+  --btn-cancel-bg: linear-gradient(135deg, #ff758c, #ff7eb3);
+}
+
+body {
+  background: var(--bg-color);
+  color: var(--text-color);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+
 .app-container {
   max-width: 700px;
   margin: 40px auto;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #fff;
-  background: linear-gradient(145deg, #1e2a38, #141c28);
   padding: 30px;
   border-radius: 12px;
+  background: var(--bg-color);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  transition: all 0.3s ease;
 }
 
 h1 {
@@ -14,7 +38,6 @@ h1 {
   margin-bottom: 20px;
   font-weight: 700;
   color: #ffdd57;
-  text-shadow: 1px 1px 2px #000;
 }
 
 .input-box {
@@ -26,28 +49,27 @@ h1 {
 
 .input-box label {
   font-size: 0.9rem;
-  color: #ccc;
+  color: var(--text-color);
 }
 
 .input {
   padding: 10px;
   border-radius: 8px;
   border: none;
-  background: #2a374b;
-  color: #fff;
+  background: var(--card-bg);
+  color: var(--text-color);
   font-size: 1rem;
 }
 
 .input:focus {
   outline: 2px solid #ffdd57;
-  background: #37475a;
 }
 
 .btn {
   padding: 10px 16px;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(135deg, #ff7e5f, #feb47b);
+  background: var(--btn-bg);
   color: #fff;
   cursor: pointer;
   font-weight: 600;
@@ -60,7 +82,7 @@ h1 {
 }
 
 .btn-cancel {
-  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  background: var(--btn-cancel-bg);
 }
 
 .filters, .sort-box {
@@ -91,8 +113,9 @@ h1 {
   padding: 14px 16px;
   margin-bottom: 12px;
   border-radius: 10px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: var(--card-bg);
 }
 
 .task-item:hover {
@@ -100,59 +123,29 @@ h1 {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
-.task-item.not_started {
-  background: #007bff; /* синий */
-}
+.task-item.not_started { background: #007bff; }
+.task-item.in_progress { background: #ffc107; color: #000; }
+.task-item.done { background: #28a745; }
 
-.task-item.in_progress {
-  background: #ffc107; /* жёлтый */
-  color: #000;
-}
+.task-content strong { font-size: 1.1rem; }
+.task-content p { margin: 4px 0 0; font-size: 0.95rem; }
+.task-content small { display: block; margin-top: 6px; font-size: 0.8rem; color: #ddd; }
 
-.task-item.done {
-  background: #28a745; /* зелёный */
-}
+.done-text { text-decoration: line-through; opacity: 0.8; }
 
-.task-content strong {
-  font-size: 1.1rem;
-}
-
-.task-content p {
-  margin: 4px 0 0;
-  font-size: 0.95rem;
-}
-
-.task-content small {
-  display: block;
-  margin-top: 6px;
-  font-size: 0.8rem;
-  color: #ddd;
-}
-
-.done-text {
-  text-decoration: line-through;
-  opacity: 0.8;
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.actions { display: flex; align-items: center; gap: 8px; }
 
 .actions select {
   padding: 6px 8px;
   border-radius: 6px;
   border: none;
-  background: #2a374b;
-  color: #fff;
+  background: var(--card-bg);
+  color: var(--text-color);
   cursor: pointer;
   font-size: 0.9rem;
 }
 
-.actions select:focus {
-  outline: 2px solid #ffdd57;
-}
+.actions select:focus { outline: 2px solid #ffdd57; }
 
 .delete-btn {
   border: none;
@@ -163,6 +156,16 @@ h1 {
   transition: transform 0.2s ease;
 }
 
-.delete-btn:hover {
-  transform: scale(1.2);
+.delete-btn:hover { transform: scale(1.2); }
+
+/* --- Адаптивность --- */
+@media (max-width: 768px) {
+  .filters, .sort-box { flex-direction: column; align-items: stretch; }
+  .task-item { flex-direction: column; align-items: flex-start; gap: 6px; }
+}
+
+@media (max-width: 480px) {
+  .app-container { padding: 20px; margin: 20px; }
+  .input, .actions select { font-size: 0.9rem; padding: 8px; }
+  .btn { padding: 8px 12px; font-size: 0.9rem; }
 }

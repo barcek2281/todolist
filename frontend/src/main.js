@@ -4,8 +4,8 @@ import './app.css';
 import { CreateTask, GetTasks, UpdateTaskStatus, DeleteTask, GetFilteredAndSortedTasks, UpdateTaskPriority} from '../wailsjs/go/main/App';
 document.querySelector('#app').innerHTML = `
   <div class="app-container">
-    <h1>My Todo List ✅</h1>
-
+    <h1>My Todo List </h1>
+    <button id="toggleTheme" class="btn btn-cancel">Toggle Theme</button>
     <!-- Фильтры -->
     <div class="filters">
       <label>
@@ -80,6 +80,7 @@ let filterStatus = document.getElementById("filterStatus");
 
 let sortField = document.getElementById("sortField");
 let sortOrder = document.getElementById("sortOrder");
+const toggleThemeBtn = document.getElementById("toggleTheme");
 
 // текущее состояние сортировки
 let currentOrderBy = "created_at";
@@ -212,6 +213,10 @@ document.getElementById("applySort").addEventListener("click", () => {
     currentOrderBy = sortField.value;
     currentAsc = sortOrder.value === "asc";
     loadFilteredTasks();
+});
+
+toggleThemeBtn.addEventListener("click", () => {
+    document.body.classList.toggle("light");
 });
 
 // первая загрузка

@@ -106,6 +106,7 @@ func (ts *TaskService) GetFilteredAndSortedTasks(
 	defer cancel()
 
 	log.Debug("data came", "start", start, "end", end, "status", status, "orderby", orderBy, "asc", asc)
+
 	tasks, err := ts.taskRepo.FilterAndSort(ctx, start, end, status, orderBy, asc)
 	if err != nil {
 		return make([]model.Task, 0), nil

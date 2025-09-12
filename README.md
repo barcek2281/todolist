@@ -25,5 +25,5 @@ wails dev
 ```
 
 ## Example of working App
-
-<img src="">
+как все должно работать, при удачных запуске
+<img src="./img/example_1.png">
