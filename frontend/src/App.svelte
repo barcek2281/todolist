@@ -1,6 +1,6 @@
-<script>
-  import './style.css';
-  import './app.css';
+<script lang="ts">
+  import "./style.css";
+  import "./app.css";
 
   import {
     CreateTask,
@@ -8,11 +8,15 @@
     UpdateTaskStatus,
     DeleteTask,
     GetFilteredAndSortedTasks,
-    UpdateTaskPriority
-  } from '../wailsjs/go/main/App';
+    UpdateTaskPriority,
+    UpdateTask,
+  } from "../wailsjs/go/main/App";
+  import { onMount } from "svelte";
+  import type { dto, model } from "../wailsjs/go/models";
+  import Modal from "./lib/Modal.svelte";
 
   // reactive state
-  let tasks = [];
+  let tasks: model.Task[] = [];
 
   // form fields
   let taskTitle = "";
@@ -31,6 +35,9 @@
   let currentOrderBy = "created_at";
   let currentAsc = true;
 
+  let showModal = false;
+  let editTaskId = null; // вместо showModal
+
   // load all tasks
   async function loadAllTasks() {
     try {
@@ -43,9 +50,9 @@
   async function loadFilteredTasks() {
     try {
       tasks = await GetFilteredAndSortedTasks(
-        filterFrom || "",
-        filterTo || "",
-        filterStatus || "",
+        filterFrom,
+        filterTo,
+        filterStatus,
         currentOrderBy,
         currentAsc
       );
@@ -60,12 +67,13 @@
 
     let deadline = taskDeadline ? new Date(taskDeadline).toISOString() : null;
     try {
-      await CreateTask({
+      let task: dto.TaskRequest = {
         title: taskTitle.trim(),
         body: taskBody.trim(),
         priority: parseInt(taskPriority, 10),
-        deadline
-      });
+        deadline,
+      };
+      await CreateTask(task);
       taskTitle = "";
       taskBody = "";
       taskPriority = "0";
@@ -95,7 +103,7 @@
   }
 
   async function deleteTask(id, title) {
-    if (!confirm(`Удалить задачу "${title}"?`)) return;
+    if (!confirm(`Delete task "${title}"?`)) return;
     try {
       await DeleteTask(id);
       await loadAllTasks();
@@ -127,8 +135,11 @@
     document.body.classList.toggle("light");
   }
 
+  function openEditModal(task: model.Task) {
+    alert(task.id);
+  }
+
   // on mount
-  import { onMount } from 'svelte';
   onMount(loadAllTasks);
 </script>
 
@@ -182,8 +193,18 @@
 
   <!-- Добавление задачи -->
   <form class="input-box" on:submit|preventDefault={addTask}>
-    <input class="input" type="text" placeholder="Task title..." bind:value={taskTitle} required />
-    <textarea class="input" placeholder="Task description..." bind:value={taskBody}></textarea>
+    <input
+      class="input"
+      type="text"
+      placeholder="Task title..."
+      bind:value={taskTitle}
+      required
+    />
+    <textarea
+      class="input"
+      placeholder="Task description..."
+      bind:value={taskBody}
+    ></textarea>
     <label>
       Priority:
       <select bind:value={taskPriority}>
@@ -205,9 +226,15 @@
     {#each tasks as task}
       <li class="task-item {task.status}">
         <div class="task-content">
-          <strong class={task.status === "done" ? "done-text" : ""}>{task.title}</strong>
-          <p class={task.status === "done" ? "done-text" : ""}>{task.body || ""}</p>
-          <small>Created: {new Date(task.created_at).toLocaleDateString()}</small>
+          <strong class={task.status === "done" ? "done-text" : ""}
+            >{task.title}</strong
+          >
+          <p class={task.status === "done" ? "done-text" : ""}>
+            {task.body || ""}
+          </p>
+          <small
+            >Created: {new Date(task.created_at).toLocaleDateString()}</small
+          >
           {#if task.deadline}
             <small>Deadline: {new Date(task.deadline).toLocaleString()}</small>
           {/if}
@@ -216,9 +243,17 @@
           <label>
             Status:
             <select on:change={(e) => updateStatus(task.id, e.target.value)}>
-              <option value="not_started" selected={task.status === "not_started"}>Not Started</option>
-              <option value="in_progress" selected={task.status === "in_progress"}>In Progress</option>
-              <option value="done" selected={task.status === "done"}>Done</option>
+              <option
+                value="not_started"
+                selected={task.status === "not_started"}>Not Started</option
+              >
+              <option
+                value="in_progress"
+                selected={task.status === "in_progress"}>In Progress</option
+              >
+              <option value="done" selected={task.status === "done"}
+                >Done</option
+              >
             </select>
           </label>
           <label>
@@ -230,7 +265,41 @@
               <option value="3" selected={task.priority === 3}>3</option>
             </select>
           </label>
-          <button class="delete-btn" on:click={() => deleteTask(task.id, task.title)}>❌</button>
+          <button
+            class="delete-btn"
+            on:click={() => deleteTask(task.id, task.title)}>❌</button
+          >
+          <!-- Edit button-->
+          <button
+            class="edit-btn"
+            on:click={() => {
+              showModal = true;
+              editTaskId = task.id;
+            }}>✏️</button
+          >
+          {#if editTaskId === task.id}
+            <Modal bind:showModal>
+              {#snippet header()}
+                <h2>Edit Task</h2>
+              {/snippet}
+              <form
+                on:submit|preventDefault={() =>
+                  UpdateTask(task.id, task.title, task.body).then(() => {
+                    showModal = false;
+                    editTaskId = null;
+                    loadAllTasks();
+                  })}
+              >
+                <label for="title">title</label>
+                <input id="title" type="text" bind:value={task.title} />
+
+                <label for="body">body</label>
+                <input id="body" type="text" bind:value={task.body} />
+
+                <button type="submit" class="btn">Save</button>
+              </form>
+            </Modal>
+          {/if}
         </div>
       </li>
     {/each}

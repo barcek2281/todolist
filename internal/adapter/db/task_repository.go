@@ -150,3 +150,13 @@ func (tr *TaskRepository) UpdatePriority(ctx context.Context, id uuid.UUID, prio
 
 	return err
 }
+
+func (tr *TaskRepository) Update(ctx context.Context, id uuid.UUID, title, body string) error {
+	q := `UPDATE tasks SET title = $1, body = $2 where id = $3`
+	cmd, err := tr.conn.Exec(ctx, q, title, body, id)
+	if cmd.RowsAffected() == 0 {
+		return fmt.Errorf("no such id: %v", err)
+	}
+
+	return err
+}

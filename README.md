@@ -10,7 +10,7 @@ Created by Zhunis Ayanat, Тестовое задания для DMARK
 
 - Backend: Go + Wails
 
-- Frontend: Vanilla JS, HTML, CSS
+- Frontend: svelte, HTML, CSS
 
 - База данных: PostgreSQL
 

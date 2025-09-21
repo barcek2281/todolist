@@ -7,8 +7,11 @@ import (
 	"time"
 	"wailstest/internal/adapter/db"
 	"wailstest/internal/config"
+	"wailstest/internal/dto"
 	"wailstest/internal/model"
 	"wailstest/internal/service"
+
+	"github.com/google/uuid"
 )
 
 // App struct
@@ -45,10 +48,17 @@ func (a *App) Greet(t model.Task) string {
 	return fmt.Sprintf("Hello %s, It's show time!", t.Title)
 }
 
-func (a *App) CreateTask(task model.Task) error {
+func (a *App) CreateTask(t dto.TaskRequest) error {
 	log := a.log.With("method", "CreateTask")
 	ctx, cancel := context.WithTimeout(a.ctx, time.Second*5)
 	defer cancel()
+	task := model.Task{
+		Title:    t.Title,
+		Body:     t.Body,
+		Deadline: t.Deadline,
+		Priority: t.Priority,
+	}
+
 	err := a.taskService.Create(ctx, task)
 	if err != nil {
 		log.Error("cannot create task", "error", err)
@@ -111,6 +121,17 @@ func (a *App) UpdateTaskPriority(id string, priority int) error {
 	log := a.log.With("method", "UpdateTaskPriority")
 
 	err := a.taskService.UpdateTaskPriority(a.ctx, id, priority)
+	if err != nil {
+		log.Error("cannot update", "error", err)
+		return err
+	}
+	return nil
+}
+
+func (a *App) UpdateTask(id uuid.UUID, title string, body string) error {
+	log := a.log.With("method", "UpdateTask")
+
+	err := a.taskService.UpdateTask(context.Background(), id, title, body)
 	if err != nil {
 		log.Error("cannot update", "error", err)
 		return err

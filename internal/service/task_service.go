@@ -129,3 +129,13 @@ func (ts *TaskService) UpdateTaskPriority(ctx context.Context, id string, priori
 	}
 	return nil
 }
+
+func (ts *TaskService) UpdateTask(ctx context.Context, id uuid.UUID, title, body string) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*5)
+	defer cancel()
+	err := ts.taskRepo.Update(ctx, id, title, body)
+	if err != nil {
+		return err
+	}
+	return nil
+}
