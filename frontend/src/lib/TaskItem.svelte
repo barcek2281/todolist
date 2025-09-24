@@ -52,12 +52,26 @@
     {#if showModal}
       <Modal bind:showModal>
         {#snippet header()}<h2>Edit Task</h2>{/snippet}
-        <form on:submit|preventDefault={saveEdit}>
-          <input type="text" bind:value={task.title} />
-          <input type="text" bind:value={task.body} />
+        <form class="formgy" on:submit|preventDefault={saveEdit}>
+          <label  class="label-form" for="title-input">Title: </label>
+          <input type="text" id="title-input" bind:value={task.title} />
+          <label class="label-form" for="body-input">Body: </label>
+          <input type="text" id="body-input" bind:value={task.body} />
           <button class="btn">Save</button>
         </form>
       </Modal>
     {/if}
   </div>
 </li>
+
+<style>
+  .formgy{
+    display: flex;
+    flex-direction: column; 
+    margin-inline: 10%;
+    gap:10px
+  }
+  .label-form{
+    text-align: start;
+  }
+</style>

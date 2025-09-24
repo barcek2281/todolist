@@ -50,6 +50,7 @@ h1 {
 .input-box label {
   font-size: 0.9rem;
   color: var(--text-color);
+
 }
 
 .input {
@@ -59,6 +60,7 @@ h1 {
   background: var(--card-bg);
   color: var(--text-color);
   font-size: 1rem;
+  max-width: 100%;
 }
 
 .input:focus {
@@ -124,14 +126,14 @@ h1 {
 }
 
 .task-item.not_started { background: #007bff; }
-.task-item.in_progress { background: #ffc107; color: #000; }
+.task-item.in_progress { background: #d7a306; color: #000; }
 .task-item.done { background: #28a745; }
 
 .task-content strong { font-size: 1.1rem; }
 .task-content p { margin: 4px 0 0; font-size: 0.95rem; }
 .task-content small { display: block; margin-top: 6px; font-size: 0.8rem; color: #ddd; }
 
-.done-text { text-decoration: line-through; opacity: 0.8; }
+.done-text { text-decoration: line-through; opacity: 1; text-decoration-color: rgb(219, 107, 107); text-decoration-style:solid }
 
 .actions { display: flex; align-items: center; gap: 8px; }
 

@@ -8,7 +8,7 @@
 
 <ul class="task-list">
   {#if tasks.length === 0}
-    <li class="empty">No tasks yet 🚀</li>
+    <li class="empty">No tasks yet!!!</li>
   {:else}
     {#each tasks as task (task.id)}
       <TaskItem {task} {reload} />
